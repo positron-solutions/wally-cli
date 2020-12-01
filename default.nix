@@ -1,10 +1,10 @@
-{ pkgs, lib, buildGoPackage, fetchFromGitHub }:
+{ pkgs, lib, ... }:
 
-buildGoPackage {
+pkgs.buildGoPackage {
   name = "wally-cli";
   goPackagePath = "github.com/zsa/wally-cli";
 
-  src = fetchFromGitHub {
+  src = pkgs.fetchFromGitHub {
     owner = "zsa";
     repo = "wally-cli";
     rev = "5c536c2c4ca974fb83495d040e69da4a8051eaa3";
