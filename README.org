@@ -1,0 +1,70 @@
+#+TITLE: Nix Package for ErgoDox Wally CLI
+
+This package provides the CLI component for the [[https://ergodox-ez.com/][Ergodox]] keyboard flashing tool,
+[[https://github.com/zsa/wally][Wally]].  If you you have Nix installed on your system, you can build the CLI tool
+for your machine without bootstrapping any Go dependencies.  The GUI tools are
+not included in the output and as a result the dependencies are very simple.
+
+[[https://github.com/rycee/home-manager][Home Manager]] builds no top of [[https://nixos.org/nix/][Nix package management]] to give you deterministic
+dependency resolution (and software distribution) regardless of the user's host
+Linux (or other OS) environment.
+
+* Installation & Usage
+
+Just download the repository or import it with src_nix{fetchGit} etc (a relative
+path is shown below) and then add it to your home.nix or configuration.nix as a
+package.
+
+#+BEGIN_SRC nix ~/.config/nixpkgs/home.nix
+{ pkgs, ...}:
+
+let
+  wally-cli = pkgs.callPackage ./wally-cli {};
+in {
+  home.packages = with pkgs; [
+    wally-cli
+    ...
+    other
+    packages
+  ];
+}
+#+END_SRC
+
+** Udev Rules
+
+On NixOS, you can import the provided example ergodox-udev.nix in your root
+configuration.nix.  It's a module, so you just add it to your modules the same
+was as hardward-configuration.nix typically is set up.  If you are only using
+Nix to provide the wally-cli binary, consult your host OS's documentation for
+where to add udev rules.
+
+** Usage
+
+#+BEGIN_SRC sh
+wally-cli <SomeHexFile.hex>
+#+END_SRC
+
+* Development
+
+You will need a bootstrapped Go environment to update the Gopkg.lock file which
+[[https://github.com/nixcloud/dep2nix][dep2nix]] needs to convert from Go's dependency resolution to Nix dependency
+resolution.  An alternative way to package the Wally software is to allow Nix to
+bootstrap a Go environment for you and generate the deps.nix by making dep2nix
+and Go available during the unpack phase.  These dependencies will not be
+present in the final binary or pollute the user's system.  This package instead
+constructed a deps.nix externally and includes it as a source, which is the more
+common path for packaging Go dependencies in Nixpkgs.
+
+You can test your results via the following statement:
+
+#+BEGIN_SRC sh
+nix-build -E 'with import <nixpkgs> {}; callPackage ./default.nix {}'
+#+END_SRC
+
+This just provides the arguments to the package as if it was being included via
+home manager or NixOS etc.
+
+* License
+
+This packaging is provided as-is, free of any warranty, independently of
+ErgoDox, ZSA etc.  See the included MIT license.
